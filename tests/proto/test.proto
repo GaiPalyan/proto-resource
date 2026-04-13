@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option php_namespace = "Tests\\Stubs\\Messages";
+option php_metadata_namespace = "Tests\\Stubs\\Messages\\GPBMetadata";
+
+message UserMessage {
+    string id = 1;
+    string name = 2;
+    AddressMessage address = 3;
+    repeated PostMessage posts = 4;
+    map<string, string> metadata = 5;
+}
+
+message AddressMessage {
+    string city = 1;
+    string street = 2;
+}
+
+message PostMessage {
+    string id = 1;
+    string title = 2;
+}
