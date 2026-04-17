@@ -15,7 +15,9 @@ final readonly class Repeated extends Field
     public function __construct(
         string $name,
         mixed $source,
+        /** Resource class used to map each item in the collection. */
         private ?string $resourceClass = null,
+        /** Explicit proto message class override; inferred from resourceClass if omitted. */
         private ?string $messageClass = null,
     ) {
         parent::__construct($name, $source);

@@ -9,6 +9,7 @@ use ProtoResource\Mask\Mask;
 
 interface FieldDefinition
 {
+    /** Applies the field to the proto message, writing the resolved value from source data. */
     public function apply(
         mixed $data,
         Mask $mask,

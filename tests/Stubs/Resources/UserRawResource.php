@@ -16,6 +16,7 @@ use Tests\Stubs\Messages\UserMessage;
 #[ProtoMessage(UserMessage::class)]
 class UserRawResource extends Resource
 {
+    /** @return array<int, \ProtoResource\Types\FieldDefinition> */
     public static function fields(): array
     {
         return [

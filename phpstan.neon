@@ -6,19 +6,23 @@ parameters:
     paths:
         - src
         - tests
+    excludePaths:
+        - tests/Stubs/Messages
 
     treatPhpDocTypesAsCertain: false
 
-    excludePaths:
-        - src/Support/Validation/Traits/HasMinMaxValidation.php
-
     ignoreErrors:
-        # Pest DSL: describe()->group() chain not typed in Pest stubs
+        # toProto() returns base Message class — concrete proto methods not visible to PHPStan
         - identifier: method.notFound
           path: tests/Unit
-          message: '#Call to an undefined method Pest\\PendingCalls\\DescribeCall::group\(\)#'
+          message: '#Call to an undefined method Google\\Protobuf\\Internal\\Message::#'
 
-        # Pest DSL: ->with() accepts mixed datasets in practice
-        - identifier: argument.type
+        # Pest expect() template type inference limitations
+        - identifier: argument.templateType
           path: tests/Unit
-          message: '#Parameter .* of method Pest\\PendingCalls\\TestCall::with\(\) expects#'
+
+        # Unresolvable types from excluded proto stubs flowing into test assertions
+        - identifier: argument.unresolvableType
+          path: tests/Unit
+        - identifier: function.unresolvableReturnType
+          path: tests/Unit

@@ -1,5 +1,10 @@
 # gRPC Resource Mapper
 
+[![Tests](https://github.com/GaiPalyan/proto-resource/actions/workflows/tests.yml/badge.svg)](https://github.com/GaiPalyan/proto-resource/actions/workflows/tests.yml)
+[![codecov](https://codecov.io/gh/GaiPalyan/proto-resource/branch/main/graph/badge.svg)](https://codecov.io/gh/GaiPalyan/proto-resource)
+[![Latest Stable Version](https://poser.pugx.org/gpalyan/proto-resource/v/stable)](https://packagist.org/packages/gpalyan/proto-resource)
+[![License](https://poser.pugx.org/gpalyan/proto-resource/license)](https://packagist.org/packages/gpalyan/proto-resource)
+
 When you implement a gRPC service in PHP, `protoc` generates stub classes for your messages — `UserMessage`, `AddressMessage`, etc. Filling them manually is repetitive and error-prone:
 
 ```php

@@ -12,6 +12,7 @@ use Tests\Stubs\Messages\PostMessage;
 #[ProtoMessage(PostMessage::class)]
 class PostResource extends Resource
 {
+    /** @return array<int, \ProtoResource\Types\FieldDefinition> */
     public static function fields(): array
     {
         return [

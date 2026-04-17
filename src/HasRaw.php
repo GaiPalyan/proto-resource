@@ -9,6 +9,13 @@ use ProtoResource\Mask\Mask;
 
 trait HasRaw
 {
+    /**
+     * Fills a proto message from raw source data without field definitions.
+     * Scalar values are mapped directly by property name. Nested objects are
+     * resolved via the setter's @param docblock to instantiate the child message.
+     *
+     * @param array<string, mixed>|object $data
+     */
     protected function fillRaw(Message $message, array|object $data, Mask $mask): void
     {
         foreach ((array) $data as $key => $value) {

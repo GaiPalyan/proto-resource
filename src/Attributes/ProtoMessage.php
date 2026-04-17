@@ -8,6 +8,7 @@ namespace ProtoResource\Attributes;
 final class ProtoMessage
 {
     public function __construct(
+        /** The fully-qualified proto message class name this resource maps to. */
         public readonly string $class,
     ) {}
 }

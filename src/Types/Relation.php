@@ -15,12 +15,15 @@ final readonly class Relation extends Field
     public function __construct(
         string $name,
         mixed $source,
+        /** Resource class used to define the nested field structure. */
         private ?string $resourceClass = null,
+        /** Explicit proto message class override; inferred from resourceClass if omitted. */
         private ?string $messageClass = null,
     ) {
         parent::__construct($name, $source);
     }
 
+    /** Returns the proto message class for this relation, resolved from resource or explicit override. */
     public function messageClass(): string
     {
         return $this->messageClass ?? $this->resourceClass::messageClass();
