@@ -6,7 +6,6 @@ namespace ProtoResource\Resources;
 
 use Google\Protobuf\FieldMask;
 use ProtoResource\Mask\Mask;
-use ProtoResource\Mask\MaskParser;
 
 final class ResourceCollection implements \IteratorAggregate
 {
@@ -15,18 +14,18 @@ final class ResourceCollection implements \IteratorAggregate
     public function __construct(
         private readonly iterable $sources,
         private readonly string $resourceClass,
-        FieldMask|array|null $inputMask = null,
+        FieldMask|array|null $mask = null,
     ) {
-        $this->mask = MaskParser::from($inputMask);
+        $this->mask = Mask::from($mask);
     }
 
-    public function toGrpc(): array
+    public function toProto(): array
     {
         $results = [];
 
         foreach ($this->sources as $source) {
             $resource = new $this->resourceClass($source, $this->mask);
-            $results[] = $resource->toGrpc();
+            $results[] = $resource->toProto();
         }
 
         return $results;
@@ -37,10 +36,5 @@ final class ResourceCollection implements \IteratorAggregate
         foreach ($this->sources as $source) {
             yield new $this->resourceClass($source, $this->mask);
         }
-    }
-
-    public function toArray(): array
-    {
-        return $this->toGrpc();
     }
 }

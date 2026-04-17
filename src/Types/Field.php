@@ -32,6 +32,6 @@ abstract readonly class Field implements FieldDefinition
 
     protected function shouldInclude(Mask $mask): bool
     {
-        return $mask->isEmpty() || $mask->has($this->name);
+        return $mask->isAll() || $mask->has($this->name);
     }
 }
