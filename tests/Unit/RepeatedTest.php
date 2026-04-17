@@ -12,7 +12,7 @@ it('maps repeated field via resource', function () {
         ],
     ]);
 
-    $message = new UserResource($source)->toGrpc();
+    $message = new UserResource($source)->toProto();
 
     expect($message->getPosts())->toHaveCount(2)
         ->and($message->getPosts()[0]->getTitle())->toBe('First')
@@ -20,7 +20,7 @@ it('maps repeated field via resource', function () {
 });
 
 it('skips empty repeated field', function () {
-    $message = new UserResource(user(['posts' => []]))->toGrpc();
+    $message = new UserResource(user(['posts' => []]))->toProto();
 
     expect($message->getPosts())->toHaveCount(0);
 });

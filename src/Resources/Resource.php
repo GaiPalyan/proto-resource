@@ -7,9 +7,7 @@ namespace ProtoResource\Resources;
 use Google\Protobuf\FieldMask;
 use Google\Protobuf\Internal\Message;
 use ProtoResource\Attributes\ProtoMessage;
-use ProtoResource\Builder;
 use ProtoResource\Mask\Mask;
-use ProtoResource\Mask\MaskParser;
 
 abstract class Resource
 {
@@ -17,47 +15,32 @@ abstract class Resource
 
     public function __construct(
         public readonly object|array $source,
-        object|array|null $inputMask = null,
+        Mask|FieldMask|array|null $mask = null,
     ) {
-        $this->assertMask($inputMask);
-
-        $this->mask = $inputMask instanceof Mask
-            ? $inputMask
-            : MaskParser::from($inputMask);
+        $this->mask = Mask::from($mask);
     }
 
-    public function toGrpc(): Message
+    public function toProto(): Message
     {
-        return new Builder()->build(
-            source: $this->source,
-            fields: static::fields(),
-            mask: $this->mask,
-            message: new (static::messageClass())()
-        );
+        $message = new (static::messageClass())();
+
+        foreach (static::fields() as $field) {
+            $field->apply($this->source, $this->mask, $message);
+        }
+
+        return $message;
     }
 
-    public static function collection(iterable $sources, FieldMask|array|null $inputMask = null): ResourceCollection
+    public static function collection(iterable $sources, FieldMask|array|null $mask = null): ResourceCollection
     {
-        return new ResourceCollection($sources, static::class, $inputMask);
+        return new ResourceCollection($sources, static::class, $mask);
     }
 
     public static function messageClass(): string
     {
-        $attrs = (new \ReflectionClass(static::class))->getAttributes(ProtoMessage::class);
+        $attrs = new \ReflectionClass(static::class)->getAttributes(ProtoMessage::class);
 
         return $attrs[0]->newInstance()->class;
-    }
-
-    private function assertMask(object|array|null $inputMask): void
-    {
-        if (
-            ! is_null($inputMask)
-            && ! $inputMask instanceof Mask
-            && ! $inputMask instanceof FieldMask
-            && ! is_array($inputMask)
-        ) {
-            throw new \InvalidArgumentException('Invalid mask input');
-        }
     }
 
     abstract public static function fields(): array;
