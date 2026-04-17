@@ -32,7 +32,7 @@ class UserResource extends Resource
 }
 
 // In your gRPC handler
-return (new UserResource($user, $request->getFieldMask()))->toGrpc();
+return (new UserResource($user, $request->getFieldMask()))->toProto();
 ```
 
 ## Features
@@ -43,6 +43,7 @@ return (new UserResource($user, $request->getFieldMask()))->toGrpc();
 - **Collections** — repeated field support
 - **Map fields** — protobuf `map<key, value>` support
 - **OneOf** — Protobuf union type support
+- **Raw filling** — map source data directly without a resource class
 
 ## Requirements
 
@@ -77,106 +78,28 @@ class UserResource extends Resource
 ### 2. Use the Resource
 ```php
 // Without Field Mask (all fields)
-$grpcMessage = (new UserResource($user))->toGrpc();
+$grpcMessage = (new UserResource($user))->toProto();
 
 // With Field Mask (specific fields only)
-$fieldMask = new \Google\Protobuf\FieldMask();
-$fieldMask->setPaths(['id', 'name', 'address.city']);
+$mask = new \Google\Protobuf\FieldMask();
+$mask->setPaths(['id', 'name', 'address.city']);
 
-$grpcMessage = (new UserResource($user, $fieldMask))->toGrpc();
+$grpcMessage = (new UserResource($user, $mask))->toProto();
+
+// With array of paths (shorthand, no FieldMask object needed)
+$grpcMessage = (new UserResource($user, ['id', 'name', 'address.city']))->toProto();
 ```
 
 ### 3. Collections
 ```php
-$collection = UserResource::collection($users, $fieldMask);
+$collection = UserResource::collection($users, $mask);
 
 foreach ($collection as $grpcMessage) {
     // Each $grpcMessage is a ready gRPC message
 }
 ```
 
-## Field Types
-
-### Value
-Maps a single scalar field.
-```php
-// Same name in source and message
-new Value('id'),
-
-// Custom source key
-new Value('name', 'full_name'),
-
-// Computed value via callback
-new Value('status', fn(User $user) => $user->is_active ? 'active' : 'inactive'),
-```
-
-### Relation
-Maps a nested object to a proto message. Pass a Resource class to define the nested structure.
-```php
-use ProtoResource\Types\Relation;
-
-// Using a nested resource (recommended)
-new Relation('address', 'address', AddressResource::class),
-
-// With explicit proto class override
-new Relation('address', 'address', AddressResource::class, AddressMessage::class),
-
-// Without a resource — uses autoFill
-new Relation('address', fn($u) => [...], messageClass: AddressMessage::class),
-```
-
-### Repeated
-Maps a collection of items to a repeated proto field.
-```php
-use ProtoResource\Types\Repeated;
-
-// Using a nested resource (recommended)
-new Repeated('posts', 'posts', PostResource::class),
-
-// Without a resource — uses autoFill
-new Repeated('posts', fn($u) => $u->posts->toArray(), messageClass: PostMessage::class),
-```
-
-### Map
-Maps an associative array to a protobuf `map<key, value>` field.
-```php
-use ProtoResource\Types\Map;
-
-// map<string, string> — scalar values
-new Map('metadata'),
-
-// With custom source key
-new Map('metadata', 'meta'),
-
-// map<string, Message> — using a nested resource
-new Map('items', 'items', ItemResource::class),
-
-// map<string, Message> — with explicit proto class
-new Map('items', 'items', ItemResource::class, ItemMessage::class),
-```
-
-### OneOf
-Resolves one field from a group based on a callable resolver.
-```php
-use ProtoResource\Types\OneOf;
-
-new OneOf(
-    name: 'result',
-    fields: [
-        'success' => new Relation('success', fn($r) => $r->data, SuccessResource::class),
-        'error'   => new Relation('error',   fn($r) => $r->error, ErrorResource::class),
-    ],
-    resolver: fn($r) => match($r->status) {
-        'ok'   => 'success',
-        'fail' => 'error',
-        default => null,
-    }
-),
-```
-
-## Nested Resources
-
-Each resource encapsulates its own field definitions. Compose them via `Relation` or `Repeated`:
+## Complete Example
 
 ```php
 #[ProtoMessage(AddressMessage::class)]
@@ -221,6 +144,125 @@ class UserResource extends Resource
     }
 }
 ```
+
+## Field Types
+
+### Value
+Maps a single scalar field.
+```php
+// Same name in source and message
+new Value('id'),
+
+// Custom source key
+new Value('name', 'full_name'),
+
+// Computed value via callback
+new Value('status', fn(User $user) => $user->is_active ? 'active' : 'inactive'),
+```
+
+### Relation
+Maps a nested object to a proto message. Pass a Resource class to define the nested structure.
+```php
+use ProtoResource\Types\Relation;
+
+// Using a nested resource (recommended)
+new Relation('address', 'address', AddressResource::class),
+
+// With explicit proto class override
+new Relation('address', 'address', AddressResource::class, AddressMessage::class),
+
+// Without a resource — raw filling (see Raw Filling)
+new Relation('address', fn($u) => [...], messageClass: AddressMessage::class),
+```
+
+### Repeated
+Maps a collection of items to a repeated proto field.
+```php
+use ProtoResource\Types\Repeated;
+
+// Using a nested resource (recommended)
+new Repeated('posts', 'posts', PostResource::class),
+
+// Without a resource — raw filling (see Raw Filling)
+new Repeated('posts', fn($u) => $u->posts->toArray(), messageClass: PostMessage::class),
+```
+
+### Map
+Maps an associative array to a protobuf `map<key, value>` field.
+```php
+use ProtoResource\Types\Map;
+
+// map<string, string> — scalar values
+new Map('metadata'),
+
+// With custom source key
+new Map('metadata', 'meta'),
+
+// map<string, Message> — using a nested resource
+new Map('items', 'items', ItemResource::class),
+
+// map<string, Message> — with explicit proto class
+new Map('items', 'items', ItemResource::class, ItemMessage::class),
+```
+
+### OneOf
+Resolves one field from a group based on a callable resolver.
+```php
+use ProtoResource\Types\OneOf;
+
+new OneOf(
+    name: 'result',
+    fields: [
+        'success' => new Relation('success', fn($r) => $r->data, SuccessResource::class),
+        'error'   => new Relation('error',   fn($r) => $r->error, ErrorResource::class),
+    ],
+    resolver: fn($r) => match($r->status) {
+        'ok'   => 'success',
+        'fail' => 'error',
+        default => null,
+    }
+),
+```
+
+## Raw Filling
+
+When source data maps 1-to-1 to proto field names, defining a dedicated resource class is unnecessary overhead. `Relation`, `Repeated`, and `Map` can be used without a resource class by passing only `messageClass`. In this mode the library falls back to **raw filling** — it maps source data directly to proto message fields by matching property names to setter methods (`set` + `ucfirst($key)`).
+
+```php
+new Relation('address', 'address', messageClass: AddressMessage::class),
+new Repeated('posts', 'posts', messageClass: PostMessage::class),
+```
+
+### Scalar fields
+
+Property names in the source data must match the proto field names exactly:
+
+```php
+$user->address = (object) ['city' => 'Moscow', 'street' => 'Arbat'];
+// maps to: $addressMessage->setCity('Moscow'), $addressMessage->setStreet('Arbat')
+```
+
+### Nested objects
+
+For nested objects, raw filling reads the `@param` type from the setter's docblock to instantiate the child message:
+
+```php
+$user->address = (object) [
+    'city'     => 'Moscow',
+    'district' => (object) ['name' => 'Central'],
+];
+```
+
+This works out of the box with `protoc`-generated stubs, which always include typed `@param` annotations:
+
+```php
+/**
+ * @param \App\Messages\DistrictMessage $var
+ */
+public function setDistrict($var) { ... }
+```
+
+> For hand-written message classes without `@param` docblocks, nested object filling is skipped. For complex mappings, key renaming, or type coercion, define a dedicated resource class instead.
 
 ## License
 

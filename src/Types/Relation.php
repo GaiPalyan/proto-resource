@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace ProtoResource\Types;
 
 use Google\Protobuf\Internal\Message;
-use ProtoResource\Builder;
+use ProtoResource\HasRaw;
 use ProtoResource\Mask\Mask;
 
 final readonly class Relation extends Field
 {
+    use HasRaw;
+
     public function __construct(
         string $name,
         mixed $source,
@@ -27,8 +29,7 @@ final readonly class Relation extends Field
     public function apply(
         mixed $data,
         Mask $mask,
-        Message $message,
-        Builder $builder
+        Message $message
     ): void {
         if (! $this->shouldInclude($mask)) {
             return;
@@ -38,24 +39,21 @@ final readonly class Relation extends Field
             return;
         }
 
-        $child = new ($this->messageClass())();
-        $childMask = $mask->child($this->name()) ?? Mask::all();
+        $childMessage = new ($this->messageClass())();
+        $childMask = $mask->nested($this->name()) ?? Mask::all();
 
         if ($this->resourceClass) {
-            $builder->build(
-                source: $value,
-                fields: $this->resourceClass::fields(),
-                mask: $childMask,
-                message: $child
-            );
+            foreach ($this->resourceClass::fields() as $field) {
+                $field->apply($value, $childMask, $childMessage);
+            }
         } else {
-            $builder->autoFill(
-                message: $child,
+            $this->fillRaw(
+                message: $childMessage,
                 data: $value,
                 mask: $childMask
             );
         }
 
-        $message->{'set' . ucfirst($this->name())}($child);
+        $message->{'set' . ucfirst($this->name())}($childMessage);
     }
 }

@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace ProtoResource\Types;
 
 use Google\Protobuf\Internal\Message;
-use ProtoResource\Builder;
+use ProtoResource\HasRaw;
 use ProtoResource\Mask\Mask;
 
 final readonly class Repeated extends Field
 {
+    use HasRaw;
+
     public function __construct(
         string $name,
         mixed $source,
@@ -22,8 +24,7 @@ final readonly class Repeated extends Field
     public function apply(
         mixed $data,
         Mask $mask,
-        Message $message,
-        Builder $builder
+        Message $message
     ): void {
         if (! $this->shouldInclude($mask)) {
             return;
@@ -42,14 +43,11 @@ final readonly class Repeated extends Field
             $itemMessage = new $protoClass();
 
             if ($this->resourceClass) {
-                $builder->build(
-                    source: $itemData,
-                    fields: $this->resourceClass::fields(),
-                    mask: Mask::all(),
-                    message: $itemMessage
-                );
+                foreach ($this->resourceClass::fields() as $field) {
+                    $field->apply($itemData, Mask::all(), $itemMessage);
+                }
             } else {
-                $builder->autoFill(
+                $this->fillRaw(
                     message: $itemMessage,
                     data: $itemData,
                     mask: Mask::all()

@@ -21,6 +21,10 @@ class AddressMessage extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>string street = 2;</code>
      */
     protected $street = '';
+    /**
+     * Generated from protobuf field <code>.DistrictMessage district = 3;</code>
+     */
+    protected $district = null;
 
     /**
      * Constructor.
@@ -30,6 +34,7 @@ class AddressMessage extends \Google\Protobuf\Internal\Message
      *
      *     @type string $city
      *     @type string $street
+     *     @type \Tests\Stubs\Messages\DistrictMessage $district
      * }
      */
     public function __construct($data = NULL) {
@@ -77,6 +82,38 @@ class AddressMessage extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->street = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>.DistrictMessage district = 3;</code>
+     * @return \Tests\Stubs\Messages\DistrictMessage|null
+     */
+    public function getDistrict()
+    {
+        return $this->district;
+    }
+
+    public function hasDistrict()
+    {
+        return isset($this->district);
+    }
+
+    public function clearDistrict()
+    {
+        unset($this->district);
+    }
+
+    /**
+     * Generated from protobuf field <code>.DistrictMessage district = 3;</code>
+     * @param \Tests\Stubs\Messages\DistrictMessage $var
+     * @return $this
+     */
+    public function setDistrict($var)
+    {
+        GPBUtil::checkMessage($var, \Tests\Stubs\Messages\DistrictMessage::class);
+        $this->district = $var;
 
         return $this;
     }
