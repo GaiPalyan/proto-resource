@@ -57,7 +57,6 @@ it('fills nested object within raw relation', function () {
     ]);
 
     $message = new UserRawResource($source)->toProto();
-dd($message->serializeToJsonString());
     expect($message->getAddress()->getCity())->toBe('Moscow')
         ->and($message->getAddress()->getDistrict()->getName())->toBe('Central');
 });

@@ -15,7 +15,9 @@ final readonly class Map extends Field
     public function __construct(
         string $name,
         mixed $source = null,
+        /** Resource class used to map each map value. */
         private ?string $resourceClass = null,
+        /** Explicit proto message class override; inferred from resourceClass if omitted. */
         private ?string $messageClass = null,
     ) {
         parent::__construct($name, $source ?? $name);

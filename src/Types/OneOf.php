@@ -9,13 +9,11 @@ use ProtoResource\Mask\Mask;
 
 final readonly class OneOf extends Field
 {
-    /**
-     * @param  array<string, Field>  $fields  Массив возможных полей
-     * @param  callable  $resolver  Функция, которая решает какое поле использовать
-     */
     public function __construct(
         string $name,
+        /** @param array<string, Field> $fields Map of field name to Field instance. */
         private array $fields,
+        /** Callable that receives source data and returns the name of the field to apply. */
         callable $resolver,
     ) {
         parent::__construct($name, $resolver);

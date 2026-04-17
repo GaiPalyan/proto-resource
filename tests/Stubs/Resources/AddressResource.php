@@ -12,6 +12,7 @@ use Tests\Stubs\Messages\AddressMessage;
 #[ProtoMessage(AddressMessage::class)]
 class AddressResource extends Resource
 {
+    /** @return array<int, \ProtoResource\Types\FieldDefinition> */
     public static function fields(): array
     {
         return [

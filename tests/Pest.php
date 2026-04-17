@@ -44,6 +44,7 @@ expect()->extend('toBeOne', function (): void {
 |
 */
 
+/** @param array<string, mixed> $override */
 function user(array $override = []): object
 {
     return (object) array_merge([
@@ -55,6 +56,7 @@ function user(array $override = []): object
     ], $override);
 }
 
+/** @param array<string> $paths */
 function mask(array $paths): FieldMask
 {
     $mask = new FieldMask();
